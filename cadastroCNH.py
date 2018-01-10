@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-gray = cv2.imread('../cnh-test.jpg')
+gray = cv2.imread('../marked-tests/cnh-test-3.jpg')
+final_img = gray
 
 face_cascade = cv2.CascadeClassifier('/usr/local/Cellar/opencv/3.3.0_3/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml')
 
@@ -32,19 +33,25 @@ while True:
     # cv2.line(gray, (int(gray.shape[1]/2), 0), (int(gray.shape[1]/2), gray.shape[0]), (255, 0, 0), 1, 1)
 
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-    y_div = int(gray.shape[0]/10)
-    x_div = int(gray.shape[1]/10)
+    dsize = 5
+    area_units = 0
+    y_div = int(gray.shape[0]/dsize)
+    x_div = int(gray.shape[1]/dsize)
     #segmentando a imagem
     img_segs = np.zeros((x_div, y_div), dtype=object)
     for i in range(0, x_div):
         for j in range(0, y_div):
-            cropped = gray[j*10:(j+1)*10, i*10:(i+1)*10]
+            cropped = gray[j*dsize:(j+1)*dsize, i*dsize:(i+1)*dsize]
             avg_color = [np.floor(cropped[:, :, w].mean()) for w in range(cropped.shape[-1])]
-            if avg_color[2] <= 100:
-                cv2.rectangle(gray,(int(i*10),int(j*10)),(int((i+1)*10),int((j+1)*10)),(255,0,0),1)
+
+            if avg_color[2] <= 90:
+                cv2.rectangle(final_img,(int(i*dsize),int(j*dsize)),(int((i+1)*dsize),int((j+1)*dsize)),(255,0,0),1)
+                area_units += 1
+            else:
+                cv2.rectangle(final_img,(int(i*dsize),int(j*dsize)),(int((i+1)*dsize),int((j+1)*dsize)),(0,0,0),1)
             img_segs[i][j] = avg_color
-            print(i,"-" ,j)
-            print(img_segs[i][j])
+
+    print(area_units)
 
 
 
@@ -52,3 +59,4 @@ while True:
         # cv2.rectangle(gray,(int(x-w/3),int(y-h/2)),(int(x+w+w/3),int(y+h+h/2)),(0,0,0),1)
         roi_gray = gray[y:y+h, x:x+w]
     cv2.imshow('frame', gray)
+    cv2.imshow('frame2', final_img)
